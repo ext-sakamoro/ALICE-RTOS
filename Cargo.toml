@@ -1,0 +1,40 @@
+[package]
+name = "alice-rtos"
+version = "0.1.0"
+edition = "2021"
+authors = ["Moroya Sakamoto"]
+description = "Math-First Real-Time OS — Don't schedule processes, schedule equations"
+license = "AGPL-3.0"
+repository = "https://github.com/ext-sakamoro/ALICE-RTOS"
+keywords = ["rtos", "no_std", "bare-metal", "cortex-m", "risc-v"]
+categories = ["embedded", "no-std", "os"]
+readme = "README.md"
+
+[lib]
+name = "alice_rtos"
+path = "src/lib.rs"
+
+[features]
+default = []
+cortex-m = []    # ARM Cortex-M (M0/M4/M7)
+riscv = []       # RISC-V (ESP32-C3, GD32VF103)
+esp32 = []       # Xtensa ESP32/ESP32-S3
+edge = []        # ALICE-Edge model evaluation tasks
+synth = []       # ALICE-Synth audio render tasks
+motion = []      # ALICE-Motion trajectory tasks
+
+[dependencies]
+# Pure no_std — zero dependencies by default
+
+[profile.release]
+opt-level = "z"       # Size-optimize for flash-constrained targets
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.bench]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+debug = false
