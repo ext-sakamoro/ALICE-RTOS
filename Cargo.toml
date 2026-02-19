@@ -9,6 +9,7 @@ repository = "https://github.com/ext-sakamoro/ALICE-RTOS"
 keywords = ["rtos", "no_std", "bare-metal", "cortex-m", "risc-v"]
 categories = ["embedded", "no-std", "os"]
 readme = "README.md"
+publish = false
 
 [lib]
 name = "alice_rtos"
