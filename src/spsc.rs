@@ -21,6 +21,12 @@ pub struct SpscRing<const N: usize> {
     read_idx: AtomicUsize,
 }
 
+impl<const N: usize> Default for SpscRing<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<const N: usize> SpscRing<N> {
     /// Create a new empty ring buffer
     pub const fn new() -> Self {

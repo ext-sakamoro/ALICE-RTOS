@@ -114,11 +114,7 @@ impl Deadline {
 
     /// Remaining time until deadline (0 if missed)
     pub fn remaining(&self, current: u64) -> u64 {
-        if current >= self.deadline {
-            0
-        } else {
-            self.deadline - current
-        }
+        self.deadline.saturating_sub(current)
     }
 
     /// Elapsed since start

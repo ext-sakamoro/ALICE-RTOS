@@ -24,6 +24,12 @@ pub struct Scheduler {
     pub context_switches: u32,
 }
 
+impl Default for Scheduler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Scheduler {
     /// Create empty scheduler
     pub const fn new() -> Self {
