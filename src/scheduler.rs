@@ -5,7 +5,7 @@
 //!
 //! Author: Moroya Sakamoto
 
-use crate::task::{Task, TaskState, TaskPriority, MAX_TASKS};
+use crate::task::{Task, TaskPriority, TaskState, MAX_TASKS};
 
 /// Rate-Monotonic Scheduler
 ///
@@ -273,9 +273,21 @@ mod tests {
     fn test_schedulability() {
         let mut sched = Scheduler::new();
         // Three tasks with total U = 0.1 + 0.5 + 0.1 = 0.7 < 0.780 (n=3 bound)
-        sched.register(Task::new(b"t1", dummy_task, TaskPriority::CRITICAL, 100, 10));
+        sched.register(Task::new(
+            b"t1",
+            dummy_task,
+            TaskPriority::CRITICAL,
+            100,
+            10,
+        ));
         sched.register(Task::new(b"t2", dummy_task, TaskPriority::HIGH, 100, 50));
-        sched.register(Task::new(b"t3", dummy_task, TaskPriority::NORMAL, 1000, 100));
+        sched.register(Task::new(
+            b"t3",
+            dummy_task,
+            TaskPriority::NORMAL,
+            1000,
+            100,
+        ));
         assert!(sched.is_schedulable());
     }
 
@@ -283,7 +295,13 @@ mod tests {
     fn test_overloaded_not_schedulable() {
         let mut sched = Scheduler::new();
         // Two tasks with total U = 0.9 + 0.5 = 1.4 > 0.828 (n=2 bound)
-        sched.register(Task::new(b"t1", dummy_task, TaskPriority::CRITICAL, 100, 90));
+        sched.register(Task::new(
+            b"t1",
+            dummy_task,
+            TaskPriority::CRITICAL,
+            100,
+            90,
+        ));
         sched.register(Task::new(b"t2", dummy_task, TaskPriority::HIGH, 100, 50));
         assert!(!sched.is_schedulable());
     }
@@ -291,7 +309,13 @@ mod tests {
     #[test]
     fn test_suspend_resume() {
         let mut sched = Scheduler::new();
-        sched.register(Task::new(b"test", dummy_task, TaskPriority::NORMAL, 100, 10));
+        sched.register(Task::new(
+            b"test",
+            dummy_task,
+            TaskPriority::NORMAL,
+            100,
+            10,
+        ));
         sched.suspend(0);
         assert_eq!(sched.get_task(0).unwrap().state, TaskState::Suspended);
 

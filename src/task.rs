@@ -89,7 +89,13 @@ impl Task {
     }
 
     /// Create a new periodic task
-    pub fn new(name: &[u8], func: TaskFn, priority: TaskPriority, period_us: u32, wcet_us: u32) -> Self {
+    pub fn new(
+        name: &[u8],
+        func: TaskFn,
+        priority: TaskPriority,
+        period_us: u32,
+        wcet_us: u32,
+    ) -> Self {
         let mut n = [0u8; 8];
         let len = name.len().min(8);
         n[..len].copy_from_slice(&name[..len]);

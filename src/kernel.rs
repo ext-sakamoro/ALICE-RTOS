@@ -6,8 +6,8 @@
 //! Author: Moroya Sakamoto
 
 use crate::scheduler::Scheduler;
+use crate::task::{Task, TaskFn, TaskPriority};
 use crate::timer::SysTimer;
-use crate::task::{Task, TaskPriority, TaskFn};
 
 /// Scratch buffer for task execution
 const SCRATCH_SIZE: usize = 1024;
