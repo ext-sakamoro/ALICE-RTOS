@@ -113,13 +113,13 @@ impl Kernel {
     }
 
     /// Stop the kernel
-    pub fn stop(&mut self) {
+    pub const fn stop(&mut self) {
         self.running = false;
     }
 
     /// Is the kernel running?
     #[must_use]
-    pub fn is_running(&self) -> bool {
+    pub const fn is_running(&self) -> bool {
         self.running
     }
 
@@ -131,7 +131,7 @@ impl Kernel {
 
     /// Memory footprint estimate
     #[must_use]
-    pub fn memory_footprint(&self) -> usize {
+    pub const fn memory_footprint(&self) -> usize {
         core::mem::size_of::<Self>()
     }
 }
@@ -217,6 +217,141 @@ mod tests {
         kernel.add_task(b"t1", noop_task, TaskPriority::NORMAL, 100, 10);
         let stats = kernel.run_for(1000, 100);
         assert_eq!(stats.total_us, 1000);
+        assert!(stats.utilization > 0.0);
+    }
+
+    // --- 追加テスト ---
+
+    #[test]
+    fn test_kernel_not_running_initially() {
+        let kernel = Kernel::testing();
+        assert!(!kernel.is_running());
+    }
+
+    #[test]
+    fn test_kernel_stop() {
+        let mut kernel = Kernel::testing();
+        kernel.stop();
+        assert!(!kernel.is_running());
+    }
+
+    #[test]
+    fn test_kernel_total_ticks_increments() {
+        let mut kernel = Kernel::testing();
+        kernel.add_task(b"t", noop_task, TaskPriority::NORMAL, 100, 10);
+        kernel.tick(0);
+        kernel.tick(100);
+        kernel.tick(100);
+        assert_eq!(kernel.total_ticks, 3);
+    }
+
+    #[test]
+    fn test_kernel_tick_no_task_still_increments_ticks() {
+        let mut kernel = Kernel::testing();
+        kernel.tick(50);
+        kernel.tick(50);
+        assert_eq!(kernel.total_ticks, 2);
+    }
+
+    #[test]
+    fn test_kernel_timer_advances_with_tick() {
+        let mut kernel = Kernel::testing();
+        kernel.tick(123);
+        assert_eq!(kernel.timer.now_us(), 123);
+    }
+
+    #[test]
+    fn test_kernel_scratch_written_by_task() {
+        fn write_task(s: &mut [u8]) {
+            s[0] = 0xFF;
+        }
+        let mut kernel = Kernel::testing();
+        kernel.add_task(b"w", write_task, TaskPriority::NORMAL, 100, 10);
+        // tick(0) でタスクが実行され、scratch[0] が書き換えられる
+        let executed = kernel.tick(0);
+        assert_eq!(executed, Some(0));
+        // scratch は private だが、タスクが正常実行された事実で確認
+    }
+
+    #[test]
+    fn test_kernel_max_tasks() {
+        let mut kernel = Kernel::testing();
+        for i in 0..16 {
+            let result =
+                kernel.add_task(b"t", noop_task, TaskPriority::NORMAL, (100 + i) as u32, 10);
+            assert!(result.is_some(), "task {i} should be added");
+        }
+        // 17個目は None
+        let over = kernel.add_task(b"x", noop_task, TaskPriority::NORMAL, 9999, 10);
+        assert!(over.is_none());
+    }
+
+    #[test]
+    fn test_kernel_run_for_empty_no_tasks_executed() {
+        let mut kernel = Kernel::testing();
+        let stats = kernel.run_for(1000, 100);
+        assert_eq!(stats.tasks_executed, 0);
+        assert_eq!(stats.context_switches, 0);
+    }
+
+    #[test]
+    fn test_kernel_run_for_tasks_executed_count() {
+        let mut kernel = Kernel::testing();
+        // period=100µs、run 1000µs、tick=100µs → 10回実行
+        kernel.add_task(b"t", noop_task, TaskPriority::NORMAL, 100, 10);
+        let stats = kernel.run_for(1000, 100);
+        assert_eq!(stats.tasks_executed, 10);
+    }
+
+    #[test]
+    fn test_kernel_run_for_schedulable_flag() {
+        let mut kernel = Kernel::testing();
+        kernel.add_task(b"t", noop_task, TaskPriority::NORMAL, 1000, 100);
+        let stats = kernel.run_for(100, 10);
+        assert!(stats.schedulable);
+    }
+
+    #[test]
+    fn test_kernel_run_for_not_schedulable() {
+        let mut kernel = Kernel::testing();
+        // utilization > 1.0 → not schedulable
+        kernel.add_task(b"t", noop_task, TaskPriority::CRITICAL, 100, 110);
+        let stats = kernel.run_for(100, 10);
+        assert!(!stats.schedulable);
+    }
+
+    #[test]
+    fn test_kernel_memory_footprint_under_2kb() {
+        let kernel = Kernel::testing();
+        assert!(
+            kernel.memory_footprint() < 2048,
+            "footprint {} bytes should be < 2KB",
+            kernel.memory_footprint()
+        );
+    }
+
+    #[test]
+    fn test_kernel_new_with_hardware_clock() {
+        let kernel = Kernel::new(150_000_000); // Raspberry Pi 5
+        assert_eq!(kernel.timer.ticks_per_us(), 150);
+        assert!(!kernel.is_running());
+    }
+
+    #[test]
+    fn test_kernel_is_schedulable_empty() {
+        let kernel = Kernel::testing();
+        assert!(kernel.is_schedulable());
+    }
+
+    #[test]
+    fn test_kernel_stats_fields() {
+        let mut kernel = Kernel::testing();
+        kernel.add_task(b"a", noop_task, TaskPriority::HIGH, 50, 5);
+        kernel.add_task(b"b", noop_task, TaskPriority::LOW, 200, 10);
+        let stats = kernel.run_for(500, 50);
+        assert_eq!(stats.total_us, 500);
+        assert!(stats.total_ticks > 0);
+        assert!(stats.tasks_executed > 0);
         assert!(stats.utilization > 0.0);
     }
 }

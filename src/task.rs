@@ -20,15 +20,15 @@ pub struct TaskPriority(pub u8);
 
 impl TaskPriority {
     /// Highest priority (audio rate tasks)
-    pub const CRITICAL: TaskPriority = TaskPriority(0);
+    pub const CRITICAL: Self = Self(0);
     /// High priority (motion control)
-    pub const HIGH: TaskPriority = TaskPriority(1);
+    pub const HIGH: Self = Self(1);
     /// Normal priority (sensor processing)
-    pub const NORMAL: TaskPriority = TaskPriority(2);
+    pub const NORMAL: Self = Self(2);
     /// Low priority (logging, telemetry)
-    pub const LOW: TaskPriority = TaskPriority(3);
+    pub const LOW: Self = Self(3);
     /// Background (non-real-time)
-    pub const IDLE: TaskPriority = TaskPriority(255);
+    pub const IDLE: Self = Self(255);
 }
 
 /// Task execution state
@@ -182,5 +182,156 @@ mod tests {
         assert!(TaskPriority::CRITICAL < TaskPriority::HIGH);
         assert!(TaskPriority::HIGH < TaskPriority::NORMAL);
         assert!(TaskPriority::NORMAL < TaskPriority::LOW);
+    }
+
+    // --- 追加テスト ---
+
+    #[test]
+    fn test_task_name_truncation() {
+        // 8バイトを超える名前は最初の8バイトに切り捨てられる
+        let task = Task::new(b"toolongname", dummy_task, TaskPriority::NORMAL, 100, 10);
+        assert_eq!(&task.name, b"toolongn");
+    }
+
+    #[test]
+    fn test_task_name_short() {
+        // 8バイト未満の名前は残りがゼロ埋めされる
+        let task = Task::new(b"ab", dummy_task, TaskPriority::NORMAL, 100, 10);
+        assert_eq!(task.name[0], b'a');
+        assert_eq!(task.name[1], b'b');
+        assert_eq!(task.name[2], 0);
+        assert_eq!(task.name[7], 0);
+    }
+
+    #[test]
+    fn test_task_name_exact_8_bytes() {
+        let task = Task::new(b"12345678", dummy_task, TaskPriority::NORMAL, 100, 10);
+        assert_eq!(&task.name, b"12345678");
+    }
+
+    #[test]
+    fn test_task_initial_exec_count_zero() {
+        let task = Task::new(b"t", dummy_task, TaskPriority::HIGH, 100, 50);
+        assert_eq!(task.exec_count, 0);
+    }
+
+    #[test]
+    fn test_task_initial_deadline_misses_zero() {
+        let task = Task::new(b"t", dummy_task, TaskPriority::HIGH, 100, 50);
+        assert_eq!(task.deadline_misses, 0);
+    }
+
+    #[test]
+    fn test_task_initial_next_activation_zero() {
+        let task = Task::new(b"t", dummy_task, TaskPriority::NORMAL, 1000, 100);
+        assert_eq!(task.next_activation, 0);
+    }
+
+    #[test]
+    fn test_task_initial_scratch_size_zero() {
+        let task = Task::new(b"t", dummy_task, TaskPriority::NORMAL, 1000, 100);
+        assert_eq!(task.scratch_size, 0);
+    }
+
+    #[test]
+    fn test_task_state_ready_after_new() {
+        let task = Task::new(b"t", dummy_task, TaskPriority::NORMAL, 100, 10);
+        assert_eq!(task.state, TaskState::Ready);
+    }
+
+    #[test]
+    fn test_frequency_zero_period() {
+        let task = Task::empty();
+        // period_us = 0 の場合は 0.0 を返す
+        assert!(task.frequency_hz() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_utilization_zero_period() {
+        let task = Task::empty();
+        assert!(task.utilization() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_utilization_full_cpu() {
+        // wcet == period → 100% 使用率
+        let task = Task::new(b"full", dummy_task, TaskPriority::CRITICAL, 100, 100);
+        let u = task.utilization();
+        assert!((u - 1.0).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_frequency_synth_rate() {
+        // 44.1 kHz audio: period = 23 µs → ~43 478 Hz
+        let task = Task::new(b"synth", dummy_task, TaskPriority::CRITICAL, 23, 10);
+        let freq = task.frequency_hz();
+        assert!(freq > 43_000.0 && freq < 44_000.0);
+    }
+
+    #[test]
+    fn test_frequency_1khz() {
+        let task = Task::new(b"edge", dummy_task, TaskPriority::NORMAL, 1000, 50);
+        let freq = task.frequency_hz();
+        assert!((freq - 1000.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn test_priority_idle_is_lowest() {
+        assert!(TaskPriority::LOW < TaskPriority::IDLE);
+    }
+
+    #[test]
+    fn test_priority_critical_value() {
+        assert_eq!(TaskPriority::CRITICAL.0, 0);
+    }
+
+    #[test]
+    fn test_priority_idle_value() {
+        assert_eq!(TaskPriority::IDLE.0, 255);
+    }
+
+    #[test]
+    fn test_priority_equality() {
+        assert_eq!(TaskPriority::NORMAL, TaskPriority::NORMAL);
+        assert_ne!(TaskPriority::NORMAL, TaskPriority::HIGH);
+    }
+
+    #[test]
+    fn test_priority_custom_value() {
+        let p = TaskPriority(10);
+        assert!(TaskPriority::LOW < p);
+        assert!(p < TaskPriority::IDLE);
+    }
+
+    #[test]
+    fn test_empty_task_func_is_none() {
+        let task = Task::empty();
+        assert!(task.func.is_none());
+    }
+
+    #[test]
+    fn test_new_task_func_is_some() {
+        let task = Task::new(b"t", dummy_task, TaskPriority::NORMAL, 100, 10);
+        assert!(task.func.is_some());
+    }
+
+    #[test]
+    fn test_task_state_variants_ne() {
+        assert_ne!(TaskState::Ready, TaskState::Running);
+        assert_ne!(TaskState::Running, TaskState::Sleeping);
+        assert_ne!(TaskState::Sleeping, TaskState::Suspended);
+        assert_ne!(TaskState::Suspended, TaskState::Inactive);
+    }
+
+    #[test]
+    fn test_is_active_states() {
+        // Ready, Running, Sleeping, Suspended はすべて active
+        let mut task = Task::new(b"t", dummy_task, TaskPriority::NORMAL, 100, 10);
+        task.state = TaskState::Running;
+        assert!(task.is_active());
+        task.state = TaskState::Sleeping;
+        assert!(task.is_active());
+        task.state = TaskState::Suspended;
+        assert!(task.is_active());
     }
 }

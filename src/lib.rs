@@ -29,7 +29,7 @@
 //! | `synth` | no | ALICE-Synth task templates (44.1 kHz audio) |
 //! | `motion` | no | ALICE-Motion task templates (10 kHz trajectory) |
 //! | `ffi` | no | C-ABI FFI for Unity/UE5 (66 functions) |
-//! | `python` | no | PyO3 Python bindings |
+//! | `python` | no | `PyO3` Python bindings |
 //!
 //! # Quick Start
 //!
