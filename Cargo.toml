@@ -17,6 +17,8 @@ path = "src/lib.rs"
 
 [features]
 default = []
+std = []
+ffi = ["std"]    # C-ABI FFI for Unity/UE5
 cortex-m = []    # ARM Cortex-M (M0/M4/M7)
 riscv = []       # RISC-V (ESP32-C3, GD32VF103)
 esp32 = []       # Xtensa ESP32/ESP32-S3

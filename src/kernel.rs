@@ -34,6 +34,7 @@ pub struct Kernel {
 
 impl Kernel {
     /// Create kernel with hardware clock
+    #[must_use]
     pub const fn new(clock_hz: u32) -> Self {
         Self {
             scheduler: Scheduler::new(),
@@ -45,6 +46,7 @@ impl Kernel {
     }
 
     /// Create kernel for testing (software timer)
+    #[must_use]
     pub const fn testing() -> Self {
         Self {
             scheduler: Scheduler::new(),
@@ -116,16 +118,19 @@ impl Kernel {
     }
 
     /// Is the kernel running?
+    #[must_use]
     pub fn is_running(&self) -> bool {
         self.running
     }
 
     /// Check RMS schedulability
+    #[must_use]
     pub fn is_schedulable(&self) -> bool {
         self.scheduler.is_schedulable()
     }
 
     /// Memory footprint estimate
+    #[must_use]
     pub fn memory_footprint(&self) -> usize {
         core::mem::size_of::<Self>()
     }

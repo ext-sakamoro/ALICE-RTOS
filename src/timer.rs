@@ -1,7 +1,7 @@
 //! System timer — hardware-abstract tick source
 //!
 //! Provides microsecond-resolution timing for the scheduler.
-//! On real hardware, this wraps SysTick (Cortex-M) or MTIME (RISC-V).
+//! On real hardware, this wraps `SysTick` (Cortex-M) or MTIME (RISC-V).
 //! For testing, uses a software counter.
 //!
 //! Author: Moroya Sakamoto
@@ -21,7 +21,8 @@ pub struct SysTimer {
 impl SysTimer {
     /// Create a new system timer
     ///
-    /// `clock_hz`: hardware clock frequency (e.g. 150_000_000 for Pi 5)
+    /// `clock_hz`: hardware clock frequency (e.g. `150_000_000` for Pi 5)
+    #[must_use]
     pub const fn new(clock_hz: u32) -> Self {
         Self {
             ticks_us: 0,
@@ -31,6 +32,7 @@ impl SysTimer {
     }
 
     /// Software timer for testing
+    #[must_use]
     pub const fn software() -> Self {
         Self {
             ticks_us: 0,
@@ -49,16 +51,19 @@ impl SysTimer {
     }
 
     /// Current time in microseconds
+    #[must_use]
     pub fn now_us(&self) -> u64 {
         self.ticks_us
     }
 
     /// Current time in milliseconds
+    #[must_use]
     pub fn now_ms(&self) -> u64 {
         self.ticks_us / 1000
     }
 
     /// Current time in seconds (as f32)
+    #[must_use]
     pub fn now_secs(&self) -> f32 {
         self.ticks_us as f32 / 1_000_000.0
     }
@@ -70,16 +75,19 @@ impl SysTimer {
     }
 
     /// Timer frequency (ticks per microsecond)
+    #[must_use]
     pub fn ticks_per_us(&self) -> u32 {
         self.ticks_per_us
     }
 
     /// Number of overflows
+    #[must_use]
     pub fn overflows(&self) -> u32 {
         self.overflows
     }
 
     /// Elapsed microseconds since a reference point
+    #[must_use]
     pub fn elapsed_since(&self, reference: u64) -> u64 {
         self.ticks_us.wrapping_sub(reference)
     }
@@ -100,6 +108,7 @@ pub struct Deadline {
 
 impl Deadline {
     /// Create a new deadline
+    #[must_use]
     pub fn new(start: u64, period_us: u32) -> Self {
         Self {
             start,
@@ -108,16 +117,19 @@ impl Deadline {
     }
 
     /// Check if deadline is met
+    #[must_use]
     pub fn is_met(&self, current: u64) -> bool {
         current <= self.deadline
     }
 
     /// Remaining time until deadline (0 if missed)
+    #[must_use]
     pub fn remaining(&self, current: u64) -> u64 {
         self.deadline.saturating_sub(current)
     }
 
     /// Elapsed since start
+    #[must_use]
     pub fn elapsed(&self, current: u64) -> u64 {
         current.wrapping_sub(self.start)
     }

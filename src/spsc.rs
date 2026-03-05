@@ -29,6 +29,7 @@ impl<const N: usize> Default for SpscRing<N> {
 
 impl<const N: usize> SpscRing<N> {
     /// Create a new empty ring buffer
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             buffer: [0u32; N],

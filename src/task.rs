@@ -73,6 +73,7 @@ pub struct Task {
 
 impl Task {
     /// Empty task slot
+    #[must_use]
     pub const fn empty() -> Self {
         Self {
             name: [0u8; 8],
@@ -115,11 +116,13 @@ impl Task {
     }
 
     /// Is this task slot active?
+    #[must_use]
     pub fn is_active(&self) -> bool {
         self.state != TaskState::Inactive
     }
 
     /// Frequency in Hz
+    #[must_use]
     pub fn frequency_hz(&self) -> f32 {
         if self.period_us == 0 {
             0.0
@@ -129,6 +132,7 @@ impl Task {
     }
 
     /// CPU utilization for this task
+    #[must_use]
     pub fn utilization(&self) -> f32 {
         if self.period_us == 0 {
             0.0

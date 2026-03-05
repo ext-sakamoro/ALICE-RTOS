@@ -236,12 +236,41 @@ fn motion_task(ctx: &mut TaskContext) {
 | Feature | Dependencies | Description |
 |---------|-------------|-------------|
 | *(default)* | None | Kernel + scheduler, pure no_std |
+| `std` | None | Standard library support |
+| `ffi` | `std` | C-ABI FFI for Unity/UE5 (66 functions) |
 | `cortex-m` | None | ARM Cortex-M HAL (NVIC, SysTick) |
 | `riscv` | None | RISC-V HAL (PLIC, mtime) |
 | `esp32` | None | Xtensa/RISC-V ESP32 HAL |
 | `edge` | None | ALICE-Edge task template |
 | `synth` | None | ALICE-Synth task template |
 | `motion` | None | ALICE-Motion task template |
+
+## C-ABI FFI (Unity / UE5)
+
+66 `extern "C"` functions for scheduling simulation and monitoring from game engines. Enable with `--features ffi`.
+
+| Module | Functions | Description |
+|--------|-----------|-------------|
+| Kernel | 12 | new, testing, free, add_task, tick, run_for, stop, is_running, is_schedulable, memory_footprint, total_ticks, active_task_count |
+| KernelStats | 7 | free, total_us, total_ticks, tasks_executed, context_switches, utilization, schedulable |
+| Scheduler | 19 | new, free, register, tick, schedulability, utilization, suspend/resume, task queries (state, exec_count, deadline_misses, utilization, frequency, period, wcet, priority) |
+| Timer | 11 | new, software, free, advance, now_us/ms/secs, reset, ticks_per_us, overflows, elapsed_since |
+| SPSC Ring | 9 | new, free, push, pop, len, is_empty, is_full, capacity, clear |
+| Deadline | 2 | is_met, remaining |
+| Priority | 5 | critical, high, normal, low, idle |
+| Version | 1 | version |
+
+- **Unity C#**: `bindings/unity/AliceRtos.cs` — 66 `[DllImport]` + RAII `IDisposable` handles
+- **UE5 C++**: `bindings/ue5/AliceRtos.h` — 66 `extern "C"` + 5 RAII `unique_ptr` handles
+
+## Test Suite
+
+45 tests across core modules and FFI:
+
+```bash
+cargo test                  # Core tests (34, no_std)
+cargo test --features ffi   # All tests (45, includes FFI)
+```
 
 ## License
 

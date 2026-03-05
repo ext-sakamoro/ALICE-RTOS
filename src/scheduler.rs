@@ -10,7 +10,7 @@ use crate::task::{Task, TaskPriority, TaskState, MAX_TASKS};
 /// Rate-Monotonic Scheduler
 ///
 /// Static task table, no dynamic allocation.
-/// Size: MAX_TASKS × sizeof(Task) + overhead ≈ 512 + 32 bytes
+/// Size: `MAX_TASKS` × sizeof(Task) + overhead ≈ 512 + 32 bytes
 pub struct Scheduler {
     /// Static task table
     tasks: [Task; MAX_TASKS],
@@ -32,6 +32,7 @@ impl Default for Scheduler {
 
 impl Scheduler {
     /// Create empty scheduler
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             tasks: [Task::empty(); MAX_TASKS],
@@ -125,6 +126,7 @@ impl Scheduler {
     /// Liu & Layland bound: U ≤ n(2^(1/n) - 1)
     /// For n=3: U ≤ 0.780
     /// For n→∞: U ≤ ln(2) ≈ 0.693
+    #[must_use]
     pub fn is_schedulable(&self) -> bool {
         let n = self.active_task_count();
         if n == 0 {
@@ -136,6 +138,7 @@ impl Scheduler {
     }
 
     /// Total CPU utilization (sum of Ci/Ti for all tasks)
+    #[must_use]
     pub fn total_utilization(&self) -> f32 {
         let mut u = 0.0f32;
         for i in 0..self.task_count {
@@ -147,6 +150,7 @@ impl Scheduler {
     }
 
     /// Number of active tasks
+    #[must_use]
     pub fn active_task_count(&self) -> usize {
         self.tasks[..self.task_count]
             .iter()
@@ -155,6 +159,7 @@ impl Scheduler {
     }
 
     /// Get task by index
+    #[must_use]
     pub fn get_task(&self, idx: usize) -> Option<&Task> {
         if idx < self.task_count {
             Some(&self.tasks[idx])
@@ -164,6 +169,7 @@ impl Scheduler {
     }
 
     /// Current system time in microseconds
+    #[must_use]
     pub fn now_us(&self) -> u64 {
         self.tick_us
     }
