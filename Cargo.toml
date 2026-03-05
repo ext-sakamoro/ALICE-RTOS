@@ -19,6 +19,7 @@ path = "src/lib.rs"
 default = []
 std = []
 ffi = ["std"]    # C-ABI FFI for Unity/UE5
+python = ["pyo3", "std"]  # PyO3 Python bindings
 cortex-m = []    # ARM Cortex-M (M0/M4/M7)
 riscv = []       # RISC-V (ESP32-C3, GD32VF103)
 esp32 = []       # Xtensa ESP32/ESP32-S3
@@ -28,6 +29,7 @@ motion = []      # ALICE-Motion trajectory tasks
 
 [dependencies]
 # Pure no_std — zero dependencies by default
+pyo3 = { version = "0.22", features = ["extension-module"], optional = true }
 
 [profile.release]
 opt-level = "z"       # Size-optimize for flash-constrained targets

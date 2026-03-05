@@ -238,6 +238,7 @@ fn motion_task(ctx: &mut TaskContext) {
 | *(default)* | None | Kernel + scheduler, pure no_std |
 | `std` | None | Standard library support |
 | `ffi` | `std` | C-ABI FFI for Unity/UE5 (66 functions) |
+| `python` | `pyo3`, `std` | PyO3 Python bindings (5 classes) |
 | `cortex-m` | None | ARM Cortex-M HAL (NVIC, SysTick) |
 | `riscv` | None | RISC-V HAL (PLIC, mtime) |
 | `esp32` | None | Xtensa/RISC-V ESP32 HAL |
@@ -265,11 +266,12 @@ fn motion_task(ctx: &mut TaskContext) {
 
 ## Test Suite
 
-45 tests across core modules and FFI:
+58 tests across core modules, task templates, and FFI:
 
 ```bash
-cargo test                  # Core tests (34, no_std)
-cargo test --features ffi   # All tests (45, includes FFI)
+cargo test                                      # Core tests (34, no_std)
+cargo test --features ffi                       # + FFI (45)
+cargo test --features ffi,edge,synth,motion     # All tests (58)
 ```
 
 ## License

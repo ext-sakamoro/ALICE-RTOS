@@ -25,9 +25,11 @@
 //! | `cortex-m` | no | ARM Cortex-M (M0/M4/M7) target support |
 //! | `riscv` | no | RISC-V (ESP32-C3, GD32VF103) target support |
 //! | `esp32` | no | Xtensa ESP32/ESP32-S3 target support |
-//! | `edge` | no | ALICE-Edge model evaluation tasks |
-//! | `synth` | no | ALICE-Synth audio render tasks |
-//! | `motion` | no | ALICE-Motion trajectory tasks |
+//! | `edge` | no | ALICE-Edge task templates (1 kHz inference) |
+//! | `synth` | no | ALICE-Synth task templates (44.1 kHz audio) |
+//! | `motion` | no | ALICE-Motion task templates (10 kHz trajectory) |
+//! | `ffi` | no | C-ABI FFI for Unity/UE5 (66 functions) |
+//! | `python` | no | PyO3 Python bindings |
 //!
 //! # Quick Start
 //!
@@ -57,16 +59,24 @@
 )]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "edge")]
+pub mod edge_tasks;
 #[cfg(feature = "ffi")]
 pub mod ffi;
 pub mod kernel;
+#[cfg(feature = "motion")]
+pub mod motion_tasks;
+#[cfg(feature = "python")]
+mod python;
 pub mod scheduler;
 pub mod spsc;
+#[cfg(feature = "synth")]
+pub mod synth_tasks;
 pub mod task;
 pub mod timer;
 
-pub use kernel::Kernel;
+pub use kernel::{Kernel, KernelStats};
 pub use scheduler::Scheduler;
 pub use spsc::SpscRing;
 pub use task::{Task, TaskFn, TaskPriority, TaskState};
-pub use timer::SysTimer;
+pub use timer::{Deadline, SysTimer};
