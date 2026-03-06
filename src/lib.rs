@@ -59,6 +59,7 @@
 )]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+pub mod dmda;
 #[cfg(feature = "edge")]
 pub mod edge_tasks;
 #[cfg(feature = "ffi")]
@@ -66,6 +67,7 @@ pub mod ffi;
 pub mod kernel;
 #[cfg(feature = "motion")]
 pub mod motion_tasks;
+pub mod priority_inherit;
 #[cfg(feature = "python")]
 mod python;
 pub mod scheduler;
@@ -75,7 +77,9 @@ pub mod synth_tasks;
 pub mod task;
 pub mod timer;
 
+pub use dmda::{analyze as dmda_analyze, DmdaReport, RtaResult};
 pub use kernel::{Kernel, KernelStats};
+pub use priority_inherit::{PipResult, PriorityInheritTracker, PriorityResource};
 pub use scheduler::Scheduler;
 pub use spsc::SpscRing;
 pub use task::{Task, TaskFn, TaskPriority, TaskState};

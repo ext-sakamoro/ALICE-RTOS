@@ -181,6 +181,25 @@ impl Scheduler {
         }
     }
 
+    /// タスクを動的に削除し、スロットを再利用可能にする。
+    ///
+    /// 削除されたタスクのスロットは `Inactive` に戻り、
+    /// 次の `register()` で再利用される（末尾スロット縮小のみ）。
+    pub fn unregister(&mut self, idx: usize) -> bool {
+        if idx >= self.task_count || self.tasks[idx].state == TaskState::Inactive {
+            return false;
+        }
+        self.tasks[idx] = Task::empty();
+        if self.current_task == Some(idx) {
+            self.current_task = None;
+        }
+        // 末尾の Inactive スロットを縮小
+        while self.task_count > 0 && self.tasks[self.task_count - 1].state == TaskState::Inactive {
+            self.task_count -= 1;
+        }
+        true
+    }
+
     /// Resume a suspended task
     pub fn resume(&mut self, idx: usize) {
         if idx < self.task_count && self.tasks[idx].state == TaskState::Suspended {
@@ -585,6 +604,55 @@ mod tests {
         let mut buf = [0u8; 16];
         sched.execute_task(0, &mut buf);
         assert_eq!(buf[0], 0xAB);
+    }
+
+    #[test]
+    fn test_unregister_task() {
+        let mut sched = Scheduler::new();
+        sched.register(Task::new(b"a", dummy_task, TaskPriority::NORMAL, 100, 10));
+        sched.register(Task::new(b"b", dummy_task, TaskPriority::HIGH, 200, 20));
+        assert_eq!(sched.active_task_count(), 2);
+        assert!(sched.unregister(0));
+        assert_eq!(sched.active_task_count(), 1);
+        assert_eq!(sched.get_task(0).unwrap().state, TaskState::Inactive);
+    }
+
+    #[test]
+    fn test_unregister_last_shrinks_count() {
+        let mut sched = Scheduler::new();
+        sched.register(Task::new(b"a", dummy_task, TaskPriority::NORMAL, 100, 10));
+        sched.register(Task::new(b"b", dummy_task, TaskPriority::HIGH, 200, 20));
+        // 末尾を削除 → task_count が縮小
+        assert!(sched.unregister(1));
+        // task_count は 1 に（スロット0のみ残る）
+        assert!(sched.get_task(1).is_none());
+    }
+
+    #[test]
+    fn test_unregister_invalid_index() {
+        let mut sched = Scheduler::new();
+        assert!(!sched.unregister(0));
+        assert!(!sched.unregister(99));
+    }
+
+    #[test]
+    fn test_unregister_already_inactive() {
+        let mut sched = Scheduler::new();
+        sched.register(Task::new(b"a", dummy_task, TaskPriority::NORMAL, 100, 10));
+        sched.unregister(0);
+        // 二度目は false
+        assert!(!sched.unregister(0));
+    }
+
+    #[test]
+    fn test_unregister_clears_current_task() {
+        let mut sched = Scheduler::new();
+        sched.register(Task::new(b"a", dummy_task, TaskPriority::NORMAL, 100, 10));
+        sched.tick(0); // 実行中にする
+        sched.unregister(0);
+        // current_task がクリアされていること → 次の tick で None
+        let result = sched.tick(100);
+        assert!(result.is_none());
     }
 
     #[test]
