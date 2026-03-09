@@ -4,3 +4,4 @@ CLAUDE.md
 
 /target/
 Cargo.lock
+.DS_Store
