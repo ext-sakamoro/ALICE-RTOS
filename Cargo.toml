@@ -2,7 +2,7 @@
 name = "alice-rtos"
 version = "0.1.0"
 edition = "2021"
-authors = ["Moroya Sakamoto"]
+authors = ["Moroya Sakamoto <sakamoro@alicelaw.net>"]
 description = "Math-First Real-Time OS — Don't schedule processes, schedule equations"
 license = "AGPL-3.0"
 repository = "https://github.com/ext-sakamoro/ALICE-RTOS"
