@@ -67,6 +67,7 @@ pub mod ffi;
 pub mod kernel;
 #[cfg(feature = "motion")]
 pub mod motion_tasks;
+pub mod prelude;
 pub mod priority_inherit;
 #[cfg(feature = "python")]
 mod python;
