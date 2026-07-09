@@ -29,7 +29,7 @@ motion = []      # ALICE-Motion trajectory tasks
 
 [dependencies]
 # Pure no_std — zero dependencies by default
-pyo3 = { version = "0.22", features = ["extension-module"], optional = true }
+pyo3 = { version = "0.29", features = ["extension-module"], optional = true }
 
 [profile.release]
 opt-level = "z"       # Size-optimize for flash-constrained targets
