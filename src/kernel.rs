@@ -332,7 +332,7 @@ mod tests {
 
     #[test]
     fn test_kernel_new_with_hardware_clock() {
-        let kernel = Kernel::new(150_000_000); // Raspberry Pi 5
+        let kernel = Kernel::new(150_000_000); // 150 MHz core clock
         assert_eq!(kernel.timer.ticks_per_us(), 150);
         assert!(!kernel.is_running());
     }

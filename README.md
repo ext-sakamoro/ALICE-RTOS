@@ -79,7 +79,7 @@ Where:
   n  = number of tasks
 ```
 
-### ALICE Task Budget Example (Raspberry Pi Pico, Cortex-M0+ @ 133MHz)
+### ALICE Task Budget Example (RP2040 board, Cortex-M0+ @ 133MHz)
 
 | Task | Period | WCET | Utilization |
 |------|--------|------|-------------|
@@ -203,7 +203,7 @@ fn motion_task(ctx: &mut TaskContext) {
 
 | Platform | CPU | Clock | Flash | RAM |
 |----------|-----|-------|-------|-----|
-| Raspberry Pi Pico | Cortex-M0+ (RP2040) | 133 MHz | 2 MB | 264 KB |
+| RP2040 board | Cortex-M0+ (RP2040) | 133 MHz | 2 MB | 264 KB |
 | STM32F4 | Cortex-M4F | 168 MHz | 512 KB | 128 KB |
 | STM32H7 | Cortex-M7 | 480 MHz | 2 MB | 1 MB |
 | ESP32-C3 | RISC-V | 160 MHz | 4 MB | 400 KB |
