@@ -5,7 +5,7 @@ All notable changes to ALICE-RTOS will be documented in this file.
 ## [Unreleased]
 
 ### Changed
-- Licence: `AGPL-3.0 OR LicenseRef-Commercial` → `LicenseRef-Proprietary`
+- Licence: `AGPL-3.0` → `LicenseRef-Proprietary`
 
 ## [0.1.0] - 2026-02-23
 
