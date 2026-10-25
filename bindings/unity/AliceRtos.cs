@@ -1,6 +1,6 @@
 // ALICE-RTOS Unity C# Bindings — 66 DllImport declarations + RAII handles
 // Auto-generated from src/ffi.rs
-// Copyright (C) 2026 Moroya Sakamoto — AGPL-3.0
+// Copyright (C) 2026 Moroya Sakamoto — LicenseRef-Proprietary
 
 using System;
 using System.Runtime.InteropServices;
